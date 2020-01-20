@@ -11,6 +11,7 @@
 #include <Sound.h>
 #include <FixPoint.h>
 #include <Drawing.h>
+#include <Data.h>
 #include <TextRenderer.h>
 
 
@@ -28,6 +29,10 @@ void showBootAnimation();
 void display_pressH();
 
 void showCountDown();
+
+void lissajousDemonstration();
+
+void figuresDemonstration();
 
 void toggle_lp();
 void toggle_tp();

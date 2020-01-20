@@ -125,14 +125,14 @@ void addClosedLinesToScene(scene* scene, drawingObject object) {
     sPos = scale(sPos, object.scale);
     sPos = rotate(sPos, object.rot);
     sPos = translation(sPos, object.pos);
-    //n += makeLine(scene->cmds,scene->noOfPoints + n, object.pos.x, object.pos.y, sPos.x, sPos.y, 0);
+    n += makeLine(scene->cmds,scene->noOfPoints + n, object.pos.x, object.pos.y, sPos.x, sPos.y, 0);
 
-    for (int i = 0; i <= object.len + 2; i += 2) {
+    for (int i = 0; i <= object.len + 4; i += 2) {
         Vector ePos = (Vector) { .x = (short) pgm_read_word(&object.data[i % object.len]), .y = (short) pgm_read_word(&object.data[(i + 1) % object.len])};
         ePos = scale(ePos, object.scale);
         ePos = rotate(ePos, object.rot);
         ePos = translation(ePos, object.pos);
-        if (i < 2) n += makeLine(scene->cmds,scene->noOfPoints + n, sPos.x, sPos.y, ePos.x, ePos.y, 0);
+        if ((i < 2) || (i > object.len + 2)) n += makeLine(scene->cmds,scene->noOfPoints + n, sPos.x, sPos.y, ePos.x, ePos.y, 0);
         else  n += makeLine(scene->cmds,scene->noOfPoints + n, sPos.x, sPos.y, ePos.x, ePos.y, object.color);
         sPos = ePos;
     }

@@ -12,6 +12,7 @@ gameObject gOArray[MAX_OBJECTS] = {emptyObject()};
 int rotateLeft = 0, rotateRight = 0, accelerate = 0;
 
 void playAsteroids() {
+    Serial.println("getting ready for asterioids");
     long timesteps = millis();
     asteroidsInit(gOArray);
     int i = 1;
@@ -23,18 +24,21 @@ void playAsteroids() {
     Serial.println("Starting Asteroids");
     while (i > 0) {
         scene *mainScene = makeScene();
+        timesteps = millis() - timesteps;
+        if (! (getLifes() <= 0 || getScore() > WIN_POINTS))
+        getUpdate(timesteps, gOArray);
         if (getLifes() <= 0) {
             renderString(mainScene, "GAME OVER", {1750, 1250}, COLOR_WHITE);
-        } else if (getScore() > 20000) {
+            if (accelerate) i = 0;
+        } else if (getScore() > WIN_POINTS) {
             renderString(mainScene, "YOU WIN", {1750, 1250}, COLOR_WHITE);
+            if (accelerate) i = 0;
         } else {
-            timesteps = millis() - timesteps;
-            getUpdate(timesteps, gOArray);
             if (rotateLeft) {
-                playerRotation(6, gOArray);
+                playerRotation(12, gOArray);
             }
             if (rotateRight) {
-                playerRotation(-6, gOArray);
+                playerRotation(-12, gOArray);
             }
             if (accelerate) {
                 playerAcceleration(16, gOArray);
@@ -73,5 +77,5 @@ void hyperspace() {
     accelerate = 0;
     rotateLeft = 0;
     rotateRight = 0;
-    //resetPlayer(gOArray);
+    resetPlayer(gOArray, {(int) random(GAME_SIZE),(int) random(GAME_SIZE)});
 }

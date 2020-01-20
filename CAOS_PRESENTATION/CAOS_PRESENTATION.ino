@@ -16,11 +16,11 @@
 void setup() {
 
   boot();
-  showBootAnimation();
 
 }
 
 void loop() {
-  display_pressH();
-  playAsteroids();
+  lissajousDemonstration();
+  figuresDemonstration();
+  play_rtttl(MISSION_IMPOSSIBLE);
 }

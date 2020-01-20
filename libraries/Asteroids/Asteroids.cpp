@@ -5,21 +5,14 @@
 #include "../Models/Models.h"
 #include "../Vector/Vector.h"
 #include "../CAOSButtons/CAOSButtons.h"
-
-#ifdef __cplusplus
-extern "C"{
-#endif
+#include "../Laser/Laser.h"
 
 
-//Contains all Objects in the game, first object is always the player
-int sizeAO;
 //Quadratic size of the game NxN
-int sizeOfGame;
 //needed for spacefriction(), counts to 0.25 seconds
-int quartersecond = 0;
-int lifes = 3;
+int frictionCounter = 0;
+int lifes = START_LIVES;
 int score = 0;
-int pointsForNewLife = 10000;
 int playerResetCounter = 0;
 static char lifeDisplay[6][5] = { {OFF,OFF,OFF,OFF,OFF}, {ON,OFF,OFF,OFF,OFF}, {ON,ON,OFF,OFF,OFF}, {ON,ON,ON,OFF,OFF}, {ON,ON,ON,ON,OFF}, {ON,ON,ON,ON,ON}};
 
@@ -27,8 +20,8 @@ static char lifeDisplay[6][5] = { {OFF,OFF,OFF,OFF,OFF}, {ON,OFF,OFF,OFF,OFF}, {
 
 //Initializes Asteroids game
 void asteroidsInit(gameObject gOArray[MAX_OBJECTS]) {
-    sizeOfGame = 4096;
-    sizeAO = 1;
+    lifes = 3;
+    score = 0;
     Vector vel = {0, 0};
     gOArray[0] = generateClosedFigure(2000, 2000, COLOR_YELLOW, vel, player, NOAS);
 
@@ -38,18 +31,17 @@ void asteroidsInit(gameObject gOArray[MAX_OBJECTS]) {
     }
 
     //for testing purposes
-    Vector vel2 = {17,23};
+    Vector vel2 = {-14,12};
     addObject(generateClosedFigure(600, 800, COLOR_WHITE, vel2, asteroid,big), gOArray);
-    vel2 = {-14,5};
+    vel2 = {14,-5};
     addObject(generateClosedFigure(3250, 3250, COLOR_WHITE, vel2, asteroid,medium), gOArray);
-    sizeAO = 3;
-    quartersecond = 0;
+    frictionCounter = 0;
     setLightPattern(lifeDisplay[lifes]);
 }
 
 //Players shoots
 void shoot(gameObject gOArray[MAX_OBJECTS]) {
-    Vector velocity = {0,-45};
+    Vector velocity = {0,-100};
     velocity = rotate(velocity, gOArray[0].graphics.rot);
 
     addObject( generateShot(gOArray[0].graphics.pos.x + velocity.x, gOArray[0].graphics.pos.y + velocity.y, COLOR_RED, velocity), gOArray );
@@ -62,55 +54,45 @@ void playerRotation(int angle, gameObject gOArray[MAX_OBJECTS]) {
 }
 
 //player enters hyperspace
-void resetPlayer(gameObject gOArray[MAX_OBJECTS]){
-    gOArray[0].graphics.pos.x = sizeOfGame/2;
-    gOArray[0].graphics.pos.y = sizeOfGame/2;
-    gOArray[0].velocity.x = 0;
-    gOArray[0].velocity.y = 0;
+void resetPlayer(gameObject gOArray[MAX_OBJECTS], Vector position){
+    gOArray[0].graphics.pos = position;
+    gOArray[0].velocity = {0,0};
     gOArray[0].reset = 1;
     playerResetCounter = 0;
 }
 
 //adds new Asteroids into the game when there is only one asteroid left in order to keep it fresh
 void endlessMode(gameObject gOArray[MAX_OBJECTS]){
-    int x;
-    int y;
-    int xvelocity;
-    int yvelocity;
+    int x, y, xvelocity, yvelocity;
     int randomNegate = random(1);
-    if(randomNegate == 1){
-        randomNegate = -1;
-    }else{
-        randomNegate = 1;
-    }
+    randomNegate = (randomNegate == 1) ? -1:1;
     switch(random(4)){
         case 0:
             x = 0;
-            y = random(sizeOfGame);
+            y = random(GAME_SIZE);
             xvelocity = random(1,21);
             yvelocity = randomNegate*random(1,21);
             break;
         case 1:
-            x = sizeOfGame-1;
-            y = random(sizeOfGame);
+            x = GAME_SIZE - 1;
+            y = random(GAME_SIZE);
             xvelocity = -1*random(1,21);
             yvelocity = randomNegate*random(1,21);
             break;
         case 2:
-            x = random(sizeOfGame);
+            x = random(GAME_SIZE);
             y = 0;
             xvelocity = randomNegate*random(1,21);
             yvelocity = random(1,21);
             break;
         case 3:
-            x = random(sizeOfGame);
-            y = sizeOfGame-1;
+            x = random(GAME_SIZE);
+            y = GAME_SIZE - 1;
             xvelocity = randomNegate*random(1,21);
             yvelocity = -1*random(1,21);
             break;
     }
-    Vector tmpvec = {xvelocity,yvelocity};
-    addObject(generateClosedFigure(x,y,COLOR_WHITE,tmpvec,asteroid,big), gOArray);
+    addObject(generateClosedFigure(x,y,COLOR_WHITE,{xvelocity,yvelocity},asteroid,big), gOArray);
 }
 
 //playerAccelerates in a direction
@@ -124,32 +106,31 @@ void removeObject(int id, gameObject gOArray[MAX_OBJECTS]) {
     gOArray[id] = emptyObject();
 }
 
-void gameOver(gameObject gOArray[]) {
-    playTone(NOTE_C6, 5000);
-    for (int i = 0; i < MAX_OBJECTS; ++i) {
-        (gOArray)[i] = emptyObject();
-        (gOArray)[i].reset = 1;
-    }
+void gameOver() {
+    COMMAND cmd = getCommand(2000,2000, COLOR_BLACK);
+    cmd += CMD_COLOR_CHANGE;
+    moveLaser(laser, cmd);
+    delay(500);
 }
 
 //if object is out of bounds reposition it
 void objectOutOfBounds(gameObject gOArray[MAX_OBJECTS]){
     for (int i = 0; i < MAX_OBJECTS; ++i) {
         if(gOArray[i].reset == 0) {
-            if(gOArray[i].type == bullet & ((gOArray[i].graphics.pos.x) < 0 || (gOArray[i].graphics.pos.x > sizeOfGame) || (gOArray[i].graphics.pos.y < 0) || (gOArray[i].graphics.pos.y > sizeOfGame))){
+            if(gOArray[i].type == bullet & ((gOArray[i].graphics.pos.x) < 0 || (gOArray[i].graphics.pos.x > GAME_SIZE) || (gOArray[i].graphics.pos.y < 0) || (gOArray[i].graphics.pos.y > GAME_SIZE))){
                 removeObject(i, gOArray);
             }else {
-                if (gOArray[i].graphics.pos.x < 0) {
-                    gOArray[i].graphics.pos.x = sizeOfGame + gOArray[i].graphics.pos.x;
+                if (gOArray[i].graphics.pos.x + gOArray[i].mostwest <= 1) {
+                    gOArray[i].graphics.pos.x = GAME_SIZE - 2 - gOArray[i].mosteast;
                 }
-                if (gOArray[i].graphics.pos.x >= sizeOfGame) {
-                    gOArray[i].graphics.pos.x = gOArray[i].graphics.pos.x - sizeOfGame;
+                if (gOArray[i].graphics.pos.x + gOArray[i].mosteast >= GAME_SIZE - 1) {
+                    gOArray[i].graphics.pos.x = - gOArray[i].mostwest;
                 }
-                if (gOArray[i].graphics.pos.y < 0) {
-                    gOArray[i].graphics.pos.y = sizeOfGame + gOArray[i].graphics.pos.y;
+                if (gOArray[i].graphics.pos.y + gOArray[i].mostnorth <= 1) {
+                    gOArray[i].graphics.pos.y = GAME_SIZE - 2 - gOArray[i].mostsouth;
                 }
-                if (gOArray[i].graphics.pos.y >= sizeOfGame) {
-                    gOArray[i].graphics.pos.y = gOArray[i].graphics.pos.y - sizeOfGame;
+                if (gOArray[i].graphics.pos.y + gOArray[i].mostsouth >= GAME_SIZE - 1) {
+                    gOArray[i].graphics.pos.y = - gOArray[i].mostnorth;
                 }
             }
         }
@@ -158,40 +139,40 @@ void objectOutOfBounds(gameObject gOArray[MAX_OBJECTS]){
 
 void awardPoints(int points) {
     score += points;
-    if (score % 10000 >= 1 + pointsForNewLife) {
+    if (score % POINTS_FOR_NEW_LIFE == 0) {
         lifes++;
-        pointsForNewLife++;
     }
     if(lifes > 5) {
         setLightPattern(lifeDisplay[5]);
     } else {
         setLightPattern(lifeDisplay[lifes]);
     }
+    if (score >= WIN_POINTS) gameOver();
 }
 
 //creates 3 new Asteroids if size of size of destroyed asteroid has not reached minimum yet
 void splitterAsteroid(struct gameObject ptr, gameObject gOArray[MAX_OBJECTS]) {
-    playTone(NOTE_C4, 200);
+    playTone(NOTE_C2, 300);
     if((ptr).astrtype == small){
         awardPoints(100); //do something, lol
         int countastr = 0;
         for(int i = 1; i< MAX_OBJECTS;i++){
             if( (gOArray[i].type == asteroid) && (gOArray[i].reset == 0) )countastr++;
         }
-        if(countastr <= 1)endlessMode(gOArray);
+        if(countastr <= 1) endlessMode(gOArray);
     }
     else if((ptr).astrtype == medium){
         awardPoints(50);
-        addObject( generateClosedFigure( (ptr).graphics.pos.x - 500,  (ptr).graphics.pos.y - 150, COLOR_WHITE, {-28, 12}, asteroid, small), gOArray);
+        addObject( generateClosedFigure( (ptr).graphics.pos.x - 500,  (ptr).graphics.pos.y - 150, COLOR_WHITE, {-28, -12}, asteroid, small), gOArray);
         addObject( generateClosedFigure( (ptr).graphics.pos.x + 150,  (ptr).graphics.pos.y - 500, COLOR_WHITE, {17, -5}, asteroid, small), gOArray);
+        addObject( generateClosedFigure( (ptr).graphics.pos.x + 150,  (ptr).graphics.pos.y - 500, COLOR_WHITE, {23, 15}, asteroid, small), gOArray);
     }else{//fuck, it's so big
         awardPoints(20);
         addObject( generateClosedFigure( (ptr).graphics.pos.x + 500,  (ptr).graphics.pos.y - 250, COLOR_WHITE,  {28, -12}, asteroid, medium), gOArray);
-        addObject( generateClosedFigure( (ptr).graphics.pos.x + 700,  (ptr).graphics.pos.y + 220, COLOR_WHITE,  {17, -17}, asteroid, small), gOArray);
+        addObject( generateClosedFigure( (ptr).graphics.pos.x + 700,  (ptr).graphics.pos.y + 220, COLOR_WHITE,  {17, 17}, asteroid, medium), gOArray);
+        addObject( generateClosedFigure( (ptr).graphics.pos.x - 700,  (ptr).graphics.pos.y + 220, COLOR_WHITE,  {-13, 23}, asteroid, medium), gOArray);
     }
 }
-
-
 
 bool collide(gameObject pObject, gameObject pObject1);
 
@@ -200,7 +181,7 @@ void playerCollision(gameObject gOArray[MAX_OBJECTS]);
 //checks if player is in hyperspace
 void checkPlayerReset(long deltaT, gameObject gOArray[MAX_OBJECTS]){
     if(gOArray[0].reset == 1) {
-        if (playerResetCounter > 2000) {
+        if (playerResetCounter > 3000) {
             gOArray[0].reset = 0;
             playerResetCounter = 0;
         }else{
@@ -210,16 +191,14 @@ void checkPlayerReset(long deltaT, gameObject gOArray[MAX_OBJECTS]){
 }
 
 void checkCollision(gameObject gOArray[MAX_OBJECTS]) {
-    for (int i = 0; i < MAX_OBJECTS; ++i) {
+    for (int i = 1; i < MAX_OBJECTS; ++i) {
         if(gOArray[i].reset == 0 && gOArray[i].type == asteroid) {
             for (int j = 0; j < MAX_OBJECTS; ++j) {
                 if( gOArray[j].reset == 0 &&  !(i == j || gOArray[j].type == asteroid)) {
                     if(collide(gOArray[i], gOArray[j])) {
                         if (gOArray[j].type == player) playerCollision(gOArray);
-                        else {
-                            gOArray[j].reset = 1;
-                        }
                         gOArray[i].reset = 1;
+                        gOArray[j].reset = 1;
                         splitterAsteroid(gOArray[i], gOArray);
                     }
                 }
@@ -230,20 +209,20 @@ void checkCollision(gameObject gOArray[MAX_OBJECTS]) {
 
 void playerCollision(gameObject gOArray[MAX_OBJECTS]) {
     lifes--;
+    resetPlayer(gOArray, {GAME_SIZE / 2, GAME_SIZE / 2});
     if(lifes > 5) {
         setLightPattern(lifeDisplay[5]);
     } else {
         setLightPattern(lifeDisplay[lifes]);
     }
-    gOArray[0].graphics.pos = {2000,2000};
     if (lifes <= 0) {
-        gameOver(gOArray);
+        gameOver();
     }
 }
 
 bool collide(gameObject pObject, gameObject pObject1) {
-    static int aX, aY, aW, aH;
-    static int bX, bY, bW, bH;
+    int aX, aY, aW, aH;
+    int bX, bY, bW, bH;
 
     aX = pObject.graphics.pos.x + pObject.mostwest;
     aY = pObject.graphics.pos.y + pObject.mostnorth;
@@ -262,7 +241,7 @@ bool collide(gameObject pObject, gameObject pObject1) {
 }
 
 void moveObjects(long deltaT, gameObject gOArray[MAX_OBJECTS]) {
-    static int timeDivision = 8192;
+    int timeDivision = 8192;
     for (int i = 0; i < MAX_OBJECTS; ++i) {
         if (gOArray[i].reset == 0) {
             int dx = ((gOArray[i]).velocity.x * deltaT) / timeDivision;
@@ -275,7 +254,7 @@ void moveObjects(long deltaT, gameObject gOArray[MAX_OBJECTS]) {
 
 //because apparently there is friction in space
 void spaceFriction(long dt, gameObject gOArray[MAX_OBJECTS]){
-    if(quartersecond >= 8000) {
+    if(frictionCounter >= 4000) {
         if (gOArray[0].velocity.x > 0) {
             if (gOArray[0].velocity.x > 16) {
                 gOArray[0].velocity.x -= 8;
@@ -303,9 +282,9 @@ void spaceFriction(long dt, gameObject gOArray[MAX_OBJECTS]){
                 gOArray[0].velocity.y += 1;
             }
         }
-        quartersecond = 0;
+        frictionCounter = 0;
     }else{
-        quartersecond += dt;
+        frictionCounter += dt;
     }
 }
 
@@ -330,12 +309,8 @@ void getUpdate(long deltaT, gameObject gOArray[MAX_OBJECTS]) {
 void addObject(gameObject obj, gameObject gOArray[MAX_OBJECTS]) {
     for (int i = 1; i < MAX_OBJECTS; ++i) {
         if(gOArray[i].reset == 1) {
-            gOArray[i] = obj;
+            gOArray[i] = static_cast<gameObject &&>(obj);
             break;
         }
     }
 }
-
-#ifdef __cplusplus
-}
-#endif

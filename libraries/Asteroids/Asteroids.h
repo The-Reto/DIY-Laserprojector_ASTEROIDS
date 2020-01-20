@@ -10,12 +10,15 @@
 #include <Vector.h>
 #include <Laser.h>
 #include <Sound.h>
+#include <Utils.h>
 
-#ifdef __cplusplus
-extern "C"{
-#endif
 
-#define MAX_OBJECTS 30
+#define MAX_OBJECTS 20
+#define START_LIVES 3
+#define WIN_POINTS 20000
+#define GAME_SIZE 4096
+#define POINTS_FOR_NEW_LIFE 10000
+
 
 void asteroidsInit(gameObject gOArray[MAX_OBJECTS]);
 
@@ -29,13 +32,10 @@ void playerAcceleration(int acceleration, gameObject gOArray[MAX_OBJECTS]);
 
 void addObject(gameObject obj, gameObject gOArray[MAX_OBJECTS]);
 
-void resetPlayer(gameObject gOArray[MAX_OBJECTS]);
+void resetPlayer(gameObject gOArray[MAX_OBJECTS], Vector position);
 
 int getLifes();
 int getScore();
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif //ASTEROIDSMAIN_ASTEROIDS_H

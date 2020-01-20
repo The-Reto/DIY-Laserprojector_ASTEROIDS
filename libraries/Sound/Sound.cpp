@@ -1,7 +1,7 @@
 #include "Sound.h"
 
 
-const char SIMPSONS[] PROGMEM = "The Simpsons:d=8,o=5,b=200:c.6,e6,f#6,8a6,g.6,e6,c6,8a,8f#,8f#,8f#,2g,8p,8p,8f#,8f#,8f#,8g,a#.,8c6,8c6,8c6,c6";
+const char SIMPSONS[] PROGMEM = "The Simpsons:d=10,o=5,b=200:c.6,e6,f#6,8a6,g.6,e6,c6,8a,8f#,8f#,8f#,2g,8p,8p,8f#,8f#,8f#,8g,a#.,8c6,8c6,8c6,c6";
 const char INDIANA_JONES[] PROGMEM = "Indiana:d=16,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.,g,8p,8a,8b,8p,1f6,p,a,8p,8b,2c6,2d6,2e6,e,8p,8f,8g,8p,1c6,p,d6,8p,8e6,1f.6,g,8p,8g,e.6,8p,d6,8p,8g,e.6,8p,d6,8p,8g,f.6,8p,e6,8p,8d6,2c6";
 const char TAKE_ON_ME[] PROGMEM = "TakeOnMe:d=4,o=4,b=160:8f#5,8f#5,8f#5,8d5,8p,8b,8p,8e5,8p,8e5,8p,8e5,8g#5,8g#5,8a5,8b5,8a5,8a5,8a5,8e5,8p,8d5,8p,8f#5,8p,8f#5,8p,8f#5,8e5,8e5,8f#5,8e5,8f#5,8f#5,8f#5,8d5,8p,8b,8p,8e5,8p,8e5,8p,8e5,8g#5,8g#5,8a5,8b5,8a5,8a5,8a5,8e5,8p,8d5,8p,8f#5,8p,8f#5,8p,8f#5,8e5,8e5";
 const char LOONEY_TUNES[] PROGMEM = "Looney:d=4,o=5,b=140:32p,c6,8f6,8e6,8d6,8c6,a.,8c6,8f6,8e6,8d6,8d#6,e.6,8e6,8e6,8c6,8d6,8c6,8e6,8c6,8d6,8a,8c6,8g,8a#,8a,8f";
@@ -16,7 +16,7 @@ const char MISSION_IMPOSSIBLE[] PROGMEM = "MissionImp:d=16,o=6,b=95:32d,32d#,32d
 const char WORMS[] PROGMEM = "Worms:d=4,o=6,b=125:8c5,8d5,e5,g5,g5,8f5,8e5,8d.5,16c5,8d5,8e5,d5,16p,8d5,8d.5,16c5,8d5,8e5,2c5,8d.5,16c5,8d5,8e5,d5,8c5,8d5,e5,g5,g5,8f5,8e5,8d.5,16c5,8d5,8e5,d5,16p,8d5,8d.5,16c5,8d5,8e5,2c5,8d.5,16c5,8d5,8e5,d5";
 const char PIRATES[] PROGMEM = "Pirates of the Caribbean:d=8,o=6,b=160:8d,8e,2f,8g,8a,g,f,e,f,g,a,g,p,8f,8g,a,p,8g,8f,e,f,e,d,p,8e,8c,d,8p,p,8d,8e,f,p,8e,8f,g,f,g,a,g,f,d";
 const char SCHWEIZER_PSALM[] PROGMEM = "CH Hymne:d=4,o=6,b=80:d5,8d5,d5,g5,8g.5,16f_.5,f_5,p,8d.5,8d5,d5,a5,a5,8g5,g5,p,b.5,8b5,8a5,8a5,a.5,8g5,f_5,2e5,c_5,2d5,p,d5,8d5,d5,g5,g5,8f_5,f_5,p,d5,8d5,d5,a5,a5,8g5,g5,p,b.5,8b5,8a5,8a5,a.5,8g5,f_5,2e5,c_5,2d5,p,g5";
-const char FINAL_COUNTDOWN[] PROGMEM = "Final Countdown:d=4,o=6,b=125:p,8p,16b,16a,b,e,p,8p,16c7,16b,8c7,8b,a,p,8p,16c7,16b,c7,e,p,8p,16a,16g,8a,8g,8f_,8a,g,8p,16f_,16g,a,8p,16g,16a,8b,8a,8g,8f_,e,c7,2b,p,16b,16c7,16b,16a,1b";
+const char FINAL_COUNTDOWN[] PROGMEM = "Final Countdown:d=6,o=6,b=125:p,8p,16b,16a,b,e,p,8p,16c7,16b,8c7,8b,a,p,8p,16c7,16b,c7,e,p,8p,16a,16g,8a,8g,8f_,8a,g,8p,16f_,16g,a,8p,16g,16a,8b,8a,8g,8f_,e,c7,2b,p,16b,16c7,16b,16a,1b";
 const char BOHEMIAN[] PROGMEM =  "Bohemian Rhapsody:d=4,o=6,b=140:32e,16p,32p,1e,p,8c,8p,d,8e,1e,8d,8e,f,8g,f,e,2d,d,e,f,8g,f,e,d,8p";
 const char FUR_ELISE[] PROGMEM =  "Fuer Elise:d=8,o=2,b=125:8e,8d_,8e,8d_,8e,8b5,8d,8c,a5,8p,8c5,8e5,8a5,b5,8p,8e5,8g_5,8b5,c,8p,8e5,8e,8d_,8e,8d_,8e,8b5,8d,8c,a5,8p,8c5,8e5,8a5,b5,8p,8e5,8c,8b5,a5";
 const char MY_HEART_WILL[] PROGMEM =  "My Heart will go on:d=4,o=6,b=100:2d,2e,a5,2a,g,8f_,2e,f_,g,2f_,e,d,c_,2d,c_,1b5,1a5,1d,2e,a5,2a,g,8f_,2e,f_,g,2f_,e,d,c_,2d,c_,c_,2d,e,2f_,2e,1d";
@@ -183,5 +183,5 @@ void play_rtttl(const char song[])
 }
 
 void playTone(int freq, long duration) {
-    //tone(SPEAKER_PIN, freq, duration);
+    tone(SPEAKER_PIN, freq, duration);
 }
